@@ -3,7 +3,7 @@ import plotly.express as px
 import pandas as pd
 from datetime import datetime
 
-# Configuración
+# Configuración de página
 st.set_page_config(
     page_title="Dashboard Papá - Trompudo",
     page_icon="🐶",
@@ -11,7 +11,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Tema oscuro con toques Mechanicus (verde cian oscuro)
+# Tema oscuro con toques Mechanicus (verde cian)
 st.markdown("""
 <style>
     .stApp {
@@ -29,48 +29,53 @@ st.markdown("""
 st.title("⚙️ ADEPTUS MECHANICUS - Dashboard de Costos")
 st.markdown("### Marzo 2026 • Para mi papá ❤️ • Despertando el Espíritu de la Máquina")
 
-# Sidebar con controles mejorados
+# Sidebar
 with st.sidebar:
     st.header("🎛️ Controles del Omnissiah")
     
     collar_costo = st.slider("Costo estimado del collar isabelino / dona", 
                              min_value=15000, max_value=50000, value=25000, step=1000,
-                             help="Ajusta según el modelo que elijas (plástico o dona cómoda)")
+                             help="Ajusta según el modelo que elijas")
     
     proyeccion = st.selectbox("Selecciona período", 
                               ["Marzo 2026 (actual)", 
                                "Abril 2026 (proyección)", 
                                "Comparación Marzo vs Abril"],
-                              help="La proyección incluye un ajuste estimado por inflación y posibles extras")
-    
-    st.caption("Los cálculos se actualizan en tiempo real ⚙️")
+                              help="La proyección incluye un ajuste estimado")
 
-# Datos base
+# ==================== DATOS Y LÓGICA DE PROYECCIÓN ====================
 planilla = 406800
 coomeva = 253000
 cirugia = 3500000
-inflacion_abril = 0.06  # 6% de aumento estimado para abril (puedes cambiar este número)
+inflacion_abril = 0.06   # 6% estimado - puedes cambiar este valor
 
-total_mensual_actual = planilla + coomeva
+total_mensual_base = planilla + coomeva
 
-# Lógica de proyección
+# Variables que siempre se definen (evita NameError)
 if proyeccion == "Marzo 2026 (actual)":
-    total_mensual = total_mensual_actual
+    total_mensual = total_mensual_base
     cirugia_mes = cirugia
-    mensaje_proyeccion = "Valores reales de marzo"
+    mensaje_proyeccion = "Valores reales de marzo 2026"
     delta = None
+    delta_color = "normal"
+
 elif proyeccion == "Abril 2026 (proyección)":
-    total_mensual = int(total_mensual_actual * (1 + inflacion_abril))
-    cirugia_mes = cirugia  # la cirugía se asume en marzo, pero puedes cambiarlo
-    mensaje_proyeccion = f"Proyección abril (+{int(inflacion_abril*100)}% estimado)"
-    delta = f"+{int((total_mensual - total_mensual_actual)/1000)}k"
-else:  # Comparación
-    total_mensual = total_mensual_actual
+    total_mensual = int(total_mensual_base * (1 + inflacion_abril))
     cirugia_mes = cirugia
+    mensaje_proyeccion = f"Proyección Abril 2026 (+{int(inflacion_abril*100)}%)"
+    delta = f"+{int((total_mensual - total_mensual_base)/1000)}k"
+    delta_color = "normal"
+
+else:  # Comparación
+    total_mensual = total_mensual_base
+    cirugia_mes = cirugia
+    mensaje_proyeccion = "Comparación Marzo vs Abril"
+    delta = None
+    delta_color = "normal"
 
 total_general = total_mensual + cirugia_mes + collar_costo
 
-# Métricas principales
+# ==================== MÉTRICAS PRINCIPALES ====================
 col1, col2, col3 = st.columns(3)
 with col1:
     st.markdown('<div class="metric-card">', unsafe_allow_html=True)
@@ -87,17 +92,17 @@ with col3:
     st.metric("🐕 Cirugía TPLO Trompudo", f"${cirugia:,}", "Aprobado ✅")
     st.markdown('</div>', unsafe_allow_html=True)
 
-# Totales
+# Totales con proyección
 st.subheader(f"📈 {mensaje_proyeccion}")
 t1, t2, t3 = st.columns(3)
 with t1:
-    st.metric("Costos Mensuales", f"${total_mensual:,}", delta)
+    st.metric("Costos Mensuales", f"${total_mensual:,}", delta, delta_color=delta_color)
 with t2:
     st.metric("Cirugía + Collar", f"${cirugia_mes + collar_costo:,}")
 with t3:
     st.metric("**TOTAL GENERAL**", f"${total_general:,}", "💙 Espíritu de la Máquina despierto")
 
-# Gráfico de distribución
+# Gráfico
 st.subheader("📊 Distribución de Costos")
 data = pd.DataFrame({
     "Categoría": ["Planilla", "Coomeva", "Cirugía TPLO", "Collar"],
@@ -130,9 +135,9 @@ with col_no:
         st.write("- Controles radiográficos posteriores")
         st.write("- Fisioterapias")
 
-# Dopamina button
+# Botón dopamina
 if st.button("¡Activar Microdosis de Dopamina! 🐾⚙️"):
     st.balloons()
-    st.success("¡El Espíritu de la Máquina aprueba (Esto es una referencia a Warhammer, estoy testeando la temática)! Todo bajo control papá ❤️")
+    st.success("¡El Espíritu de la Máquina aprueba! Todo bajo control papá ❤️")
 
-st.caption(f"Actualizado: {datetime.now().strftime('%d de marzo de 2026')} • Hecho con cariño en Python 🐶")
+st.caption(f"Actualizado: {datetime.now().strftime('%d de marzo de 2026')} • Hecho con cariño 🐶")
